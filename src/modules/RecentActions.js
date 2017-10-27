@@ -11,8 +11,7 @@ export default class RecentVotesWidget extends Component {
   }
 
   sockets = () => {
-    var HOST = location.origin.replace(/^http/, 'ws')
-    const socket = new WebSocket(HOST);
+    const socket = new WebSocket('ws://votivity.herokuapp.com');
     socket.addEventListener('open', (event) => {
       socket.send(JSON.stringify({action:'newClient'}));
     });

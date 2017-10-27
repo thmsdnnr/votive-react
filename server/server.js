@@ -12,6 +12,8 @@ const secret = process.env.SESSION_SECRET || 'Tjltaskmklmklm23__#@_T@#GVdsmaksld
 const http=require('http');
 const WebSocket=require('ws');
 
+const appPORT=process.env.PORT || 8080;
+
 const app=express();
 app.use(cookieParser());
 app.use(session({
@@ -51,7 +53,6 @@ wss.on('connection', function connection(client) {
   });
 });
 
-const webSocketPort = process.env.PORT || 8888;
 server.listen(webSocketPort, function listening() {
   console.log('Listening on %d', server.address().port);
 });
@@ -238,4 +239,4 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/../build/index.html'));
 });
 
-app.listen(process.env.PORT || 8080);
+app.listen(appPORT);
