@@ -11,7 +11,8 @@ export default class RecentVotesWidget extends Component {
   }
 
   sockets = () => {
-    const socket = new WebSocket('ws://localhost:8888');
+    var HOST = location.origin.replace(/^http/, 'ws')
+    const socket = new WebSocket(HOST);
     socket.addEventListener('open', (event) => {
       socket.send(JSON.stringify({action:'newClient'}));
     });

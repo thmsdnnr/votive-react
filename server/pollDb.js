@@ -120,13 +120,7 @@ exports.randomPoll = function(numPolls,cb) {
       'accessCt':accessCt,
       'hName':hName
       });
-      let fakeVotes=[];
-    for (var i=0;i<Object.keys(votes).length;i++) {
-      for (var j=0;j<votes[Object.keys(votes)[i]];j++) {
-        fakeVotes.push({hName:hName, votingUser:randUser, voteTime:new Date(Date.now()-(1000*randNum(0,100000))), voteFor:Object.keys(votes)[i]});
-      }
-    }
-  return {pollData:pData, fakeVotes:fakeVotes};
+  return pData;
 }
 
 exports.insertManyPolls = function(data, cb) {

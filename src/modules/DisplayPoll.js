@@ -38,7 +38,7 @@ export default class DisplayPoll extends Component {
     LoadPoll(reqPoll).then((d)=>{
       let spaceName=d.hName.replace(/-/g,' ');
       let tweetHref, expiresIn;
-      const baseURL='http://localhost:3000/p/';
+      const baseURL='https://votivity.herokuapp.com/p/';//'http://localhost:3000/p/';
       if (d.expiresOn===''||d.expiresOn===null) { tweetHref=`https://twitter.com/intent/tweet?url=${baseURL+d.hName}&text=${spaceName}: Vote now with VOTIVE!`; }
       else {
         let expiresIn=secondsLeft(d.expiresOn);

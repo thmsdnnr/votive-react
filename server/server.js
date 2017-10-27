@@ -8,7 +8,7 @@ const MongoStore = require('connect-mongo')(session);
 const sha1=require('sha1');
 const Db=require('./pollDb.js');
 const jwt = require('jsonwebtoken');
-const secret = 'Tjltaskmklmklm23__#@_T@#GVdsmaksld';
+const secret = process.env.SESSION_SECRET || 'Tjltaskmklmklm23__#@_T@#GVdsmaksld';
 const http=require('http');
 const WebSocket=require('ws');
 
@@ -51,17 +51,16 @@ wss.on('connection', function connection(client) {
   });
 });
 
-server.listen(8888, function listening() {
+const webSocketPort = process.env.PORT || 8888;
+server.listen(webSocketPort, function listening() {
   console.log('Listening on %d', server.address().port);
 });
 
 //get routes
 app.get('/random', function(req,res) {
   let data=[];
-  let fakeVotes=[];
   for (var i=0;i<50;i++) {
-    let res=Db.randomPoll();
-    data.push(res.pollData);
+    data.push(Db.randomPoll());
   }
   data=data.map(d=>d[0]);
   Db.insertManyPolls(data,()=>console.log('insertManyPolls'));
@@ -233,7 +232,6 @@ app.post('/register', function(req,res) {
     }
   });
 });
-
 
 app.get('*', (req, res) => {
   console.log('starroute');
