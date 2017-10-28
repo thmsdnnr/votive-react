@@ -38,13 +38,13 @@ export default class DisplayPoll extends Component {
     LoadPoll(reqPoll).then((d)=>{
       let spaceName=d.hName.replace(/-/g,' ');
       let tweetHref, expiresIn;
-      const baseURL='https://votivity.herokuapp.com/p/';//'http://localhost:3000/p/';
-      if (d.expiresOn===''||d.expiresOn===null) { tweetHref=`https://twitter.com/intent/tweet?url=${baseURL+d.hName}&text=${spaceName}: Vote now with VOTIVE!`; }
+      const tURL=window.location.origin+"/p/"+d.hName;
+      if (d.expiresOn===''||d.expiresOn===null) { tweetHref=`https://twitter.com/intent/tweet?url=${tURL}&text=${spaceName}: Vote now with VOTIVE!`; }
       else {
         let expiresIn=secondsLeft(d.expiresOn);
         if (expiresIn>0) {
-          tweetHref=`https://twitter.com/intent/tweet?url=${baseURL+d.hName}&text=${spaceName}! Vote in the next ${fmt(expiresIn,1)} with VOTIVE!`;
-        } else { tweetHref=`https://twitter.com/intent/tweet?url=${baseURL+d.hName}&text=The results are in for ${spaceName}. VOTIVE!`; }
+          tweetHref=`https://twitter.com/intent/tweet?url=${tURL}&text=${spaceName}! Vote in the next ${fmt(expiresIn,1)} with VOTIVE!`;
+        } else { tweetHref=`https://twitter.com/intent/tweet?url=${tURL}&text=The results are in for ${spaceName}. VOTIVE!`; }
       }
       this.setState({pollData:d, expiresIn:expiresIn, tweetHref:tweetHref},this.graphData);
     }).catch(err=>{
