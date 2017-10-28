@@ -63,11 +63,9 @@ export default class PollList extends Component {
     e.preventDefault();
     this.setState({pendingDeletes:!this.state.pendingDeletes});
     const deleteTR = document.querySelector(`tr#${e.currentTarget.id}`);
-    const oldCols = deleteTR.innerHTML;
     const dataIdx=(deleteTR.rowIndex-1)+(this.state.currentPage-1)*this.state.pollsPerPage;
     let oldData=this.state.data;
     let restoreValue=this.state.data[dataIdx];
-    { oldData[dataIdx]=restoreValue; this.setState(Object.assign(this.state.data,oldData)); }
     oldData[dataIdx]={
       type:'potentialDelete',
       name:this.state.data[dataIdx].hName.replace(/-/g,' '),
@@ -286,8 +284,8 @@ export default class PollList extends Component {
       }
       let pgButtons=[];
       for (var i=pgStart;i<=pgEnd;i++) { //start at 1 b/c humans don't count with zero
-        let btnClass = (i==curr) ? 'tab is-selected' : 'tab';
-        let aClass = (i==curr) ? 'current-page' : 'page';
+        let btnClass = (i===curr) ? 'tab is-selected' : 'tab';
+        let aClass = (i===curr) ? 'current-page' : 'page';
         pgButtons.push(
           <a id={i} key={i} className={aClass} onClick={this.pageFlip}>
           <div id="pageButtons" className={btnClass}>{i}</div>
@@ -307,7 +305,6 @@ export default class PollList extends Component {
     e.preventDefault();
     let curr=Number(this.state.currentPage);
     const numPages=Math.ceil(this.state.data.length/this.state.pollsPerPage);
-    let newPg;
     if ((e.currentTarget.id==='back')&&(curr>1)) { this.setState({currentPage:curr-=1}); }
     else if ((e.currentTarget.id==='fwd')&&(curr<numPages)) { this.setState({currentPage:curr+=1}); }
     else {

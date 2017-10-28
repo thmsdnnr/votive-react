@@ -81,7 +81,6 @@ export default class DisplayPoll extends Component {
   customSelect(e) {
     const music=document.querySelector('div.mui-select__menu');
     const cBox=document.querySelector('div.chartBox');
-    const pos=cBox.getBoundingClientRect();
     music.style.top=0;
     const choicesBeforeScroll=4;
     music.style.height=`${choicesBeforeScroll*21}px`;
@@ -116,7 +115,6 @@ export default class DisplayPoll extends Component {
     let values=keys.map(e=>votes[e]);
     keys=truncateKeys(keys);
     if (!this.state.update) {
-      let range=Math.max(...values)-Math.min(...values);
       let myChart = new Chart(ctx, {
           type: cType,
           data: {
@@ -200,9 +198,7 @@ export default class DisplayPoll extends Component {
     let display = this.state.invalid ? (<h2>This poll does not exist.</h2>) :
      (<canvas className="chart mui-panel" id="graph" style={{display:'none'}}/>);
     let dropdown=(this.state.candidates) ? this.generateDropdownOptions(this.state.candidates) : null;
-    let twitterBox=(this.state.tweetHref) ? (<div id="socialNib"><a href={this.state.tweetHref} data-size="small"><i className="fa fa-twitter fa-2x" aria-hidden="true"></i></a></div>) : '';
-    let fbBox=<div id="socialNib"><div className="fb-share-button" data-href={this.props.location.pathname} data-layout="button"></div></div>;
-    let tumblrBox=<div id="socialNib"><a className="tumblr-share-button" href="https://www.tumblr.com/share">T</a></div>;
+    let twitterBox=(this.state.tweetHref) ? (<div id="socialNib"><a href={this.state.tweetHref} data-size="small" title="Tweet this poll!"><i className="fa fa-twitter fa-2x" aria-hidden="true"></i></a></div>) : '';
     let expiryText,expiryTime,timeRemaining;
     if (this.state.pollData) { expiryTime=this.state.pollData.expiresOn; }
     if (expiryTime) {

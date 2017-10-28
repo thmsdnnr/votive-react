@@ -14,7 +14,6 @@ export default class PollPreview extends Component {
 
   randomVoteData(pName, choices) {
     let votes = {};
-    let totalVotes=0;
     choices=choices.filter(e=>e.length);
     for (var i=0;i<choices.length;i++) {
       votes[choices[i]] = this.randNum(20,100); //0 to 100 votes

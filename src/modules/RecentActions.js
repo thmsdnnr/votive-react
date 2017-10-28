@@ -11,21 +11,15 @@ export default class RecentVotesWidget extends Component {
   }
 
   sockets = () => {
-    console.log('called sockets');
-    var host = location.origin.replace(/^http/, 'ws');
+    var host = window.location.origin.replace(/^http/, 'ws');
     const socket = new WebSocket(host);
     socket.addEventListener('open', (event) => {
-      console.log('open socket', event);
       socket.send(JSON.stringify({action:'newClient'}));
     });
-    socket.addEventListener('close', (event) => {
-      console.log('closed socket', event);
-    });
     socket.addEventListener('message', (event) => {
-      console.log(event);
       event=JSON.parse(event.data);
       if (event.type==='initialUpdate') { //event.data is an array of most recent events
-        let newMessages=event.data.reverse().map(e=>this.props.handler( //reverse to display ascending
+        event.data.reverse().map(e=>this.props.handler(
           Object.assign(JSON.parse(e.event),{rehydrate:true})
         ));
       }
@@ -55,9 +49,9 @@ export default class RecentVotesWidget extends Component {
         case 'newUser': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{p.username} joined us</div>); break;
         case 'newPoll': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{p.username} created<br />—<Link to={'/p/'+p.hName}>{p.pollName}</Link></div>); break;
         case 'newVote': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{voteUser} voted for {p.vote}<br />—<Link to={'/p/'+p.hName}>{p.hName.replace(/-/g,' ')}</Link></div>); break;
+        default: return (<div id='toast'></div>);
       }
     });
-    console.log(displayItems);
     return(
       <div id="toasterWidget">
         <ReactCSSTransitionGroup transitionName="example"

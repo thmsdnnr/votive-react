@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {BrowserRouter, Route, Switch, Link, withRouter, Redirect} from 'react-router-dom';
 
 export default class AddPoll extends Component {
   constructor(props) {
