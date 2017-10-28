@@ -27,12 +27,12 @@ app.use(session({
   cookie: { secure: false, httpOnly: false, maxAge:(60*60*1000) } //1 hour max age -> DOESN'T WORK WITH SECURE:TRUE ON NON-HTTPS LOCALHOST
 }));
 app.use('/static',express.static(path.join(__dirname,'/../build/static')));
-console.log(path.join(__dirname,'/../static'));
 app.use(['/p'],bodyParser.urlencoded({extended:true}));
 app.use(['/d','/add','/vote','/login','/register','/list','/authVerify'],bodyParser.json());
 
 const server=http.createServer(app);
-const wss=new WebSocket.Server({server});
+const wss=new WebSocket.Server({server: server});
+server.listen(appPORT);
 
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
@@ -41,20 +41,17 @@ wss.broadcast = function broadcast(data) {
 };
 
 wss.on('connection', function connection(client) {
-  Db.wsHandler(wss.broadcast);
-  client.on('message', function incoming(message) {
-    if (message) { message=JSON.parse(message); }
-    if (message.action==='newClient') {
-      Db.grabLastNEvents(4, function(data) {
-        console.log(data);
-        client.send(JSON.stringify({type:'initialUpdate', data:data}));
-      });
-    }
-  });
-});
-
-server.listen(appPORT, function listening() {
-  console.log('Listening on %d', server.address().port);
+  if (client.readyState === client.OPEN) {
+    Db.wsHandler(wss.broadcast);
+    client.on('message', function incoming(message) {
+      if (message) { message=JSON.parse(message); }
+      if (message.action==='newClient') {
+        Db.grabLastNEvents(4, function(data) {
+          client.send(JSON.stringify({type:'initialUpdate', data:data}));
+        });
+      }
+    });
+  }
 });
 
 //get routes
@@ -65,6 +62,7 @@ app.get('/random', function(req,res) {
   }
   data=data.map(d=>d[0]);
   Db.insertManyPolls(data,()=>console.log('insertManyPolls'));
+  res.send(JSON.stringify('complete'));
 });
 
 app.get('/logout', function(req,res) {
@@ -234,9 +232,6 @@ app.post('/register', function(req,res) {
   });
 });
 
-app.get('*', (req, res) => {
-  console.log('starroute');
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname+'/../build/index.html'));
 });
-
-app.listen(appPORT);

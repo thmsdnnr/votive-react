@@ -11,11 +11,18 @@ export default class RecentVotesWidget extends Component {
   }
 
   sockets = () => {
-    const socket = new WebSocket('ws://votivity.herokuapp.com');
+    console.log('called sockets');
+    var host = location.origin.replace(/^http/, 'ws');
+    const socket = new WebSocket(host);
     socket.addEventListener('open', (event) => {
+      console.log('open socket', event);
       socket.send(JSON.stringify({action:'newClient'}));
     });
+    socket.addEventListener('close', (event) => {
+      console.log('closed socket', event);
+    });
     socket.addEventListener('message', (event) => {
+      console.log(event);
       event=JSON.parse(event.data);
       if (event.type==='initialUpdate') { //event.data is an array of most recent events
         let newMessages=event.data.reverse().map(e=>this.props.handler( //reverse to display ascending
