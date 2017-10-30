@@ -30,7 +30,6 @@ function getToasts() {
 function compareToasters(a,b) { //compares toaster bodies (ignoring time), returns if equal
   a=a.map(e=>e.split(/\n/).slice(1).join("")); //get rid of time component (first line)
   b=b.map(e=>e.split(/\n/).slice(1).join(""));
-  console.log(a,b,'comptoast');
   return JSON.stringify(a)===JSON.stringify(b);
 }
 const toasterSize=4;
@@ -102,7 +101,6 @@ module.exports = {
       .execute(getToasts,[],function(newt) {
         const pre=B.__toastCache;
         const post=newt.value;
-        console.log(pre, post);
         B.assert.ok(JSON.stringify(pre)!==JSON.stringify(post));
         const preMatch=pre.slice(0,3).map(e=>e.split(/\n/).slice(1).join(""));
         const postMatch=post.slice(1).map(e=>e.split(/\n/).slice(1).join(""));

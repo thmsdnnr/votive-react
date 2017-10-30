@@ -107,7 +107,6 @@ module.exports = {
     .assert.urlEquals(dashURL, 'valid login takes user to the dash')
     .useXpath()
     .getText('//div[@id="warning"]', (text) => {
-      console.log(text);
       B.assert.equal(text.value, 'You have no polls available.\nWhy not make one now?');
     })
     //logs out user

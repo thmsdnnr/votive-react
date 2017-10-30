@@ -47,6 +47,7 @@
   },
   "scripts": {
     "start": "cd server && node server",
+    "devStart": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "nightwatch",
     "postinstall": "npm run build && cd server && npm install"

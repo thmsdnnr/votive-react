@@ -44,7 +44,6 @@ export default class PollList extends Component {
             'Content-Type': 'application/json'
           }
         }).then(r=>r.json()).then(d=>{
-          console.log(d);
           if (d.length) { cb(d); }
           else { cb(null); }
         });
@@ -76,7 +75,6 @@ export default class PollList extends Component {
     this.setState(JSON.parse(sessionCache),()=>{
       this.grabPollsByListType(this.state.listType, (D)=>{
         if (D) {
-          console.log(D);
           const sorted=this.sortPolls(D, this.state.currentSortKey, this.state.currentSortDirection).map(e=>e[2]);
           this.spinOut(()=>{
             let table=document.querySelector('table#pollT');
@@ -363,7 +361,6 @@ export default class PollList extends Component {
       pagination = this.renderPagination();
       tblHead = this.props.windowBig ? this.createBigTH() : this.createLittleTH();
       tableRows = (this.state.data) ? this.state.data.slice(start,end).map((i,idx)=>this.props.windowBig ? this.createBigTR(i,idx) : this.createLittleTR(i,idx)) : null;
-      console.log(tableRows);
     }
     if (this.state.listType==='tag') {
       tagName=this.props.match.params.tagName;
