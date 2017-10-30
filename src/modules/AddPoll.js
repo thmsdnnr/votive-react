@@ -98,7 +98,7 @@ export default class AddPoll extends Component {
     const normalButtons = (
     <div id="buttonBox">
       <button className="mui-btn mui-btn--raised mui-btn--primary" type="submit" onClick={this.addPoll}>submit</button><br />
-      <button className="mui-btn mui-btn--raised" type="preview" onClick={this.showPreview}>preview</button><br />
+      <button className="mui-btn mui-btn--raised" type="preview" onClick={this.showPreview}>preview & customize</button><br />
       <button className="mui-btn mui-btn--raised mui-btn--danger" type="clear" onClick={this.toggleClearConfirm}>clear</button>
     </div>);
 

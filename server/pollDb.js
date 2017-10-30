@@ -1,5 +1,8 @@
 var MongoClient = require('mongodb').MongoClient;
 var ObjectID=require('mongodb').ObjectID;
+const Nouns=require('./randomWords').Nouns;
+const Adjectives=require('./randomWords').Adjectives;
+
 let db;
 let W;
 let dbUrl=process.env.PROD_DB||'mongodb://localhost:27017/';
@@ -93,10 +96,19 @@ const gS = [
 
 exports.randGrad = function() { return gS[Math.floor(Math.random()*(gS.length-1))]; }
 
-exports.randomPoll = function(numPolls,cb) {
-  let pData=[];
+const randomTags=['cats','bats','wallabies','acroyoga','professional juggling','catherding','hiking','camping','tenting','programming',
+'worldsaving','dreaming','biking','running','climbing',"sticky","wordless","blackened",  "hand-held",  "uninspired",  "in-between",  "grammatical",  "protracted",  "ambivalent",  "aggravated",  "immersive",  "rubber",  "ambient",  "contaminated",  "exasperated",  "idealistic",  "long-held",  "laughable",  "versed",  "penned",  "disabling",  "hooded",  "fading",  "rubber",  "goalless",  "fearless",  "flexible",  "sometime",  "improbable",  "philosophical",  "adjustable",  "primal",  "permissible",  "human",  "healthier",  "left-footed",  "begotten",  "aggravated",  "paced",  "stately",  "ever-present",  "low-budget",  "uppity",  "mind-boggling",  "humid",  "premium",  "uninvited",  "injured",  "frugal",  "diagonal"
+];
+
+const randomWord = () => randomTags[Math.floor(Math.random()*(randomTags.length-1))];
+const randomNoun = () => Nouns[Math.floor(Math.random()*(Nouns.length-1))];
+const randomTag = () => Adjectives[Math.floor(Math.random()*(100,150))];
+
+exports.randomPoll = function() {
+    return new Promise(function(resolve,reject) {
+      let pData=[];
       const randUser = String.fromCharCode(randNum(97,122));
-      const pollName = String.fromCharCode(randNum(97,122));
+      const pollName = randomNoun()+" "+randomAdjective()+" "+randomNoun()//String.fromCharCode(randNum(97,122));
       const numRandChoices = randNum(2,15);
       const randCreatedMoment = new Date(Date.now()-(1000*randNum(0,100000)));
       const randExpiry = Math.random()>=0.5 ? new Date(Date.now()+(1000*randNum(0,100000))) : null;
@@ -109,6 +121,10 @@ exports.randomPoll = function(numPolls,cb) {
       }
       let accessCt = randNum(1,1000);
       let hName=pollName+"-"+randUser+"-"+numRandChoices;
+      const tags=['randomlyGenerated'];
+      tags.push(randomTag());
+      tags.push(randomTag());
+      tags.push(randomTag());
       pData.push({
       'createdOn':randCreatedMoment,
       'username':randUser,
@@ -118,9 +134,25 @@ exports.randomPoll = function(numPolls,cb) {
       'votes':votes,
       'totalVotes':totalVotes,
       'accessCt':accessCt,
-      'hName':hName
+      'hName':hName,
+      'tags':tags
       });
-  return pData;
+    tags.map((tag,idx)=>{
+      db.collection("tags").insert({tag,pollName},()=>{if (idx===tags.length-1) {
+        resolve(pData);
+      }});
+    });
+  });
+}
+
+exports.aggregateTopNTags = function(N, cb) {
+  N=Math.max(N, 10);
+  db.collection("tags").aggregate([{'$group': {_id:'$tag', count:{$sum:1}}}, {$sort:{"count":-1}}, {$limit: N}])
+  .toArray(function(err, docs) {
+    if (!err) {
+      cb(docs);
+    }
+  });
 }
 
 exports.insertManyPolls = function(data, cb) {
@@ -136,7 +168,7 @@ exports.insertManyPollData = function(data, cb) {
 }
 
 exports.savePoll = function(data,cb) {
-  let broadcast={evtType:'newPoll', actionTime:new Date(), pollName:data.pollName, hName:data.hName, username:data.username};
+  let broadcast={evtType:'newPoll', actionTime:new Date(), tags:data.tags, pollName:data.pollName, hName:data.hName, username:data.username};
   db.collection("polls").insert({
     username:data.username,
     pollName:data.pollName,
@@ -146,7 +178,8 @@ exports.savePoll = function(data,cb) {
     votes:data.votes,
     totalVotes:0,
     accessCt:0,
-    hName:data.hName
+    hName:data.hName,
+    tags:data.tags
   },
   function(err,data){
     if(!err) {
@@ -154,6 +187,9 @@ exports.savePoll = function(data,cb) {
       cb(data);
     } else { cb(false); }
   });
+  if (data.tags.length) {
+    data.tags.forEach((tag)=>{db.collection("tags").insert({tag:tag,pollName:data.pollName}); });
+  }
 }
 
 exports.deletePoll = function(data,cb) {
@@ -188,6 +224,12 @@ exports.loadPollByName = function(name,cb) {
 exports.loadPollsWithPrefix = function(data,cb) {
   let regex=new RegExp(`(${data})`,'i');
   db.collection("polls").find({'hName':regex}).toArray(function(err, docs) {
+    if(!err) { (docs.length) ? cb(docs) : cb(false); }
+  });
+}
+
+exports.loadPollsWithTag = function(tag,cb) {
+  db.collection("polls").find({tags:tag}).toArray(function(err, docs) {
     if(!err) { (docs.length) ? cb(docs) : cb(false); }
   });
 }

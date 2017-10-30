@@ -8,41 +8,75 @@ export default class PollList extends Component {
     this.deletePoll=this.deletePoll.bind(this);
     this.createBigTR=this.createBigTR.bind(this);
     this.createLittleTR=this.createLittleTR.bind(this);
-    this.grabPolls=this.grabPolls.bind(this);
+    this.grabPollsByListType=this.grabPollsByListType.bind(this);
     this.headerSort=this.headerSort.bind(this);
     this.getSecondsAgo=this.getSecondsAgo.bind(this);
     this.renderPagination=this.renderPagination.bind(this);
     this.pageFlip=this.pageFlip.bind(this);
   }
 
-  grabPolls = (listType, cb) => {
-    fetch('/list', {
-      method: 'POST',
-      credentials: 'same-origin',
-      body: JSON.stringify({type:listType, user:this.props.auth}),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+  grabPollsByListType = (listType, cb) => {
+    if (listType==='user'||listType==='all') {
+      fetch('/list', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: JSON.stringify({type:listType, user:this.props.auth}),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }).then(r=>r.json()).then(d=>{
+        if (d.length) { cb(d); }
+        else { cb(null); }
+      });
+    }
+  else if (listType==='tag') {
+    const tag=this.props.match.params.tagName;
+    if (!tag||tag.match(/[^a-zA-Z0-9]-/)) { cb(null); }
+    else {
+        let path=`/t/${tag}`;
+        fetch(path, {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: JSON.stringify({tag}),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }).then(r=>r.json()).then(d=>{
+          console.log(d);
+          if (d.length) { cb(d); }
+          else { cb(null); }
+        });
       }
-    }).then(r=>r.json()).then(d=>{
-      if (d.length) { cb(d); }
-      else { cb(null); }
-    });
+    }
   }
 
   widthChange = (mq) => mq.matches ? this.setState({windowBig:true}) : this.setState({windowBig:false});
 
   componentWillMount() {
-    const lType = (this.props.location.pathname.slice(1)==='list') ? 'all' : 'user';
-    this.setState({listType:lType,user:this.props.auth});
+    let listType;
+    switch(this.props.location.pathname.slice(1)) {
+      case 'list': listType='all'; break;
+      case 'dash': listType='user'; break;
+      default: listType='tag'; break;
+    }
+    this.setState({listType,user:this.props.auth});
   }
 
   spinOut = (cb,ms) => setTimeout(()=>{this.setState({loading:false}); cb();},ms);
 
   componentDidMount() {
-    this.setState(JSON.parse(sessionStorage.getItem(this.state.listType)),()=>{
-      this.grabPolls(this.state.listType, (D)=>{
+    let sessionCache;
+    if (this.state.listType==='tag') {
+      const tagName='tagList'+this.props.match.params.tagName;
+      sessionCache=sessionStorage.getItem(tagName);
+    }
+    else { sessionCache=sessionStorage.getItem(this.state.listType); }
+    this.setState(JSON.parse(sessionCache),()=>{
+      this.grabPollsByListType(this.state.listType, (D)=>{
         if (D) {
+          console.log(D);
           const sorted=this.sortPolls(D, this.state.currentSortKey, this.state.currentSortDirection).map(e=>e[2]);
           this.spinOut(()=>{
             let table=document.querySelector('table#pollT');
@@ -56,7 +90,13 @@ export default class PollList extends Component {
   }
 
   componentWillUnmount() {
-    sessionStorage.setItem(this.state.listType, JSON.stringify(Object.assign(this.state,{loading:true, data:null})));
+    if (this.state.listType==='tag') {
+      const tagName='tagList'+this.props.match.params.tagName;
+      sessionStorage.setItem(tagName, JSON.stringify(Object.assign(this.state,{loading:true, data:null})));
+    }
+    else {
+      sessionStorage.setItem(this.state.listType, JSON.stringify(Object.assign(this.state,{loading:true, data:null})));
+    }
   }
 
   toggleConfirmDelete = (e) => {
@@ -87,7 +127,7 @@ export default class PollList extends Component {
         'Content-Type': 'application/json'
       }
     }).then(res=>res.json()).then((data)=>{
-      if (data) { this.grabPolls(this.state.listType, (D) => {
+      if (data) { this.grabPollsByListType(this.state.listType, (D) => {
         if (D) {
           const sorted=this.sortPolls(D, this.state.currentSortKey, this.state.currentSortDirection).map(e=>e[2]);
           this.setState({data:sorted, loading:false});
@@ -315,7 +355,7 @@ export default class PollList extends Component {
   }
 
   render() {
-    let tableRows, tblHead;
+    let tableRows, tblHead, tagName;
     const start=(this.state.currentPage-1)*this.state.pollsPerPage;
     const end=start+this.state.pollsPerPage;
     let pagination;
@@ -323,11 +363,20 @@ export default class PollList extends Component {
       pagination = this.renderPagination();
       tblHead = this.props.windowBig ? this.createBigTH() : this.createLittleTH();
       tableRows = (this.state.data) ? this.state.data.slice(start,end).map((i,idx)=>this.props.windowBig ? this.createBigTR(i,idx) : this.createLittleTR(i,idx)) : null;
+      console.log(tableRows);
+    }
+    if (this.state.listType==='tag') {
+      tagName=this.props.match.params.tagName;
     }
     return (
       <div id="container">
       {this.state.loading && <div className="loader" />}
-      {(tableRows&&!this.state.loading) && <table className="mui-table" id="pollT"><thead>{tblHead}</thead><tbody>{tableRows}</tbody></table>}
+      {(tableRows&&!this.state.loading) &&
+        <div id="nothing">
+          {tagName && <div id="tagListHeader">#{tagName}</div>}
+          <table className="mui-table" id="pollT"><thead>{tblHead}</thead><tbody>{tableRows}</tbody></table>
+        </div>
+      }
       {(!this.state.loading&&!tableRows) && <div id="warning"><h4>You have no polls available.<br />Why not <Link to='/add'>make one</Link> now?</h4></div>}
       {pagination}
       </div>

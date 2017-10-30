@@ -4,6 +4,7 @@ import {BrowserRouter, Route, Switch, Link, withRouter, Redirect} from 'react-ro
 import Jumbo from './modules/Jumbo';
 import JustNowWidget from './modules/RecentActions.js';
 import Login from './modules/Login';
+import TagCloud from './modules/TagCloud';
 import Logout from './modules/Logout';
 import Register from './modules/Register';
 import PollPreview from './modules/pollPreview';
@@ -11,6 +12,7 @@ import AddPoll from './modules/AddPoll';
 import DisplayPoll from './modules/DisplayPoll';
 import ListPolls from './modules/ListPolls';
 import muiCSS from './vendor/muiCombinedMin.js';
+
 //styles
 import './App.css';
 
@@ -52,6 +54,7 @@ class LinkHeader extends Component {
   render() {
     const links=[
       {link:'/login',linkText:'LOGIN',auth:false},
+      {link:'/t',linkText:'#',auth:false,alwaysDisplay:true},
       {link:'/add',linkText:'NEW',auth:true},
       {link:'/dash',linkText:'MINE',auth:true},
       {link:'/list',linkText:'ALL',auth:false,alwaysDisplay:true}
@@ -120,7 +123,9 @@ export default class App extends Component {
           <div className="container">
               <ShowTheLocationWithRouter auth={this.state.currentUser} />
                 <Switch>
-                  <PropsRoute path="/p/:pollName" component={DisplayPoll} updateVotes={this.updateVotes} />
+                  <Route exact path="/t" component={TagCloud} />
+                  <PropsRoute path="/p/:pollName" windowBig={this.state.windowBig} component={DisplayPoll} updateVotes={this.updateVotes} />
+                  <PropsRoute path="/t/:tagName" windowBig={this.state.windowBig} component={ListPolls} auth={this.state.currentUser}/>
                   <PrivateRoute exact path="/" windowBig={this.state.windowBig} component={ListPolls} auth={this.state.currentUser} handler={this.updateUser.bind(this)} />
                   <PropsRoute path="/login" component={Login} auth={this.state.currentUser} handler={this.updateUser.bind(this)} />
                   <Route path="/register" component={Register} />

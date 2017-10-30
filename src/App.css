@@ -20,6 +20,40 @@
   opacity: 0;
 }
 
+div#pollInfo {
+  font-family: Courier;
+  font-size: 0.8em;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+div#expiresOn {
+  flex: 0 1 auto;
+}
+
+div#pollTagBox {
+  flex: 0 1 auto;
+  justify-content: right;
+  height: auto;
+  width: auto;
+}
+
+div#tag {
+  display: inline-block;
+  width: auto;
+  margin: 0px;
+  padding: 0px 4px;
+}
+
+div#tagListHeader {
+  font-family: 'Raleway', sans-serif;
+  font-size: 1.9em;
+  text-align: center;
+  margin: auto;
+}
+
 span#activityWidget {
   opacity: 0.5;
   display: flex;
@@ -33,11 +67,6 @@ span#activityWidget {
   justify-content: flex-end;
   background-color: rgba(255,255,255,0.4);
   padding: 0px;
-}
-
-div#pollInfo {
-  font-family: Courier;
-  font-size: 0.8em;
 }
 
 #activityWidget:hover {
@@ -440,16 +469,62 @@ div#previewButtonBox {
   width: 80%;
   display: flex;
   flex-flow: row wrap;
+  overflow-y: scroll;
   margin: auto;
   padding: 0px;
   margin-top: 20px;
+  border: 1px solid gold;
 }
 
-#previewButtonBox > button {
-  justify-content: center;
+#previewButtonBox > div#previewCustomize {
+  flex: 0 1 auto;
   margin: auto;
-  width: auto;
+  width: 40%;
+  border: 1px solid black;
   padding: 0px 2px;
+  justify-content: center;
+}
+
+div#previewCustomize > button {
+  padding: 0 0 10px;
+}
+
+input#tags {
+  width: 100%;
+}
+
+label#tagLabel{
+  font-size: 0.9em;
+}
+
+div#tagCloud {
+  display: flex;
+  flex-flow: row wrap;
+  margin: 10px auto;
+  width: auto;
+  height: auto;
+  justify-content: center;
+  align-items: baseline;
+}
+
+div#cloud-el {
+  font-family: 'Courier';
+  padding: 4px;
+  width: auto;
+  flex: 1 auto;
+  justify-content: center;
+  align-items: center;
+  box-shadow: none;
+}
+
+div#cloud-el:hover {
+  color: black;
+  text-decoration: none;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.6), 0 1px 1px rgba(0,0,0,0.12);
+}
+
+span#ct {
+  font-size: 0.8em;
 }
 
 div#greeting {

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Link} from 'react-router-dom';
 import Chart from 'chart.js';
 import TinyG from 'tinygradient';
 import {formatTime as fmt, getSecondsAhead as secondsLeft } from './TimeUtils';
@@ -53,7 +54,6 @@ export default class DisplayPoll extends Component {
   }
 
   voteOnPoll(e) {
-    console.count('voteonpoll');
       e.preventDefault();
       if (this.state.voted||this.state.warning) {
         this.setState({msg:'You already voted on this!'});
@@ -199,8 +199,11 @@ export default class DisplayPoll extends Component {
      (<canvas className="chart mui-panel" id="graph" style={{display:'none'}}/>);
     let dropdown=(this.state.candidates) ? this.generateDropdownOptions(this.state.candidates) : null;
     let twitterBox=(this.state.tweetHref) ? (<div id="socialNib"><a href={this.state.tweetHref} data-size="small" title="Tweet this poll!"><i className="fa fa-twitter fa-2x" aria-hidden="true"></i></a></div>) : '';
-    let expiryText,expiryTime,timeRemaining;
-    if (this.state.pollData) { expiryTime=this.state.pollData.expiresOn; }
+    let expiryText,expiryTime,timeRemaining,tags;
+    if (this.state.pollData) {
+      expiryTime=this.state.pollData.expiresOn;
+      tags=this.state.pollData.tags;
+    }
     if (expiryTime) {
       timeRemaining=secondsLeft(expiryTime);
       expiryText = timeRemaining>0 ? `...ends in ${fmt(timeRemaining,1)}` : 'this poll has ended!';
@@ -216,7 +219,7 @@ export default class DisplayPoll extends Component {
           {display}
           {this.state.msg && <div id="warning">{this.state.msg}</div>}
           </div>
-          <div id="pollInfo">{expiryText}</div>
+          <div id="pollInfo"><div id="expiresOn">{expiryText}</div> {tags && <div id="pollTagBox">{tags.map(e=><div id="tag"><Link to={'/t/'+e}>#{e}</Link></div>)}</div>}</div>
           </div>
         }
         {this.state.invalid && <div id="warning">{display}</div>}

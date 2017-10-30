@@ -27,8 +27,8 @@ app.use(session({
   cookie: { secure: false, httpOnly: false, maxAge:(60*60*1000) } //1 hour max age -> DOESN'T WORK WITH SECURE:TRUE ON NON-HTTPS LOCALHOST
 }));
 app.use('/static',express.static(path.join(__dirname,'/../build/static')));
-app.use(['/p'],bodyParser.urlencoded({extended:true}));
-app.use(['/d','/add','/vote','/login','/register','/list','/authVerify'],bodyParser.json());
+app.use(['/p','/t'],bodyParser.urlencoded({extended:true}));
+app.use(['/d','/m','/add','/vote','/login','/register','/list','/authVerify'],bodyParser.json());
 
 const server=http.createServer(app);
 const wss=new WebSocket.Server({server: server});
@@ -57,12 +57,14 @@ wss.on('connection', function connection(client) {
 //get routes
 app.get('/random', function(req,res) {
   let data=[];
-  for (var i=0;i<50;i++) {
+  for (var i=0;i<100;i++) {
     data.push(Db.randomPoll());
   }
-  data=data.map(d=>d[0]);
-  Db.insertManyPolls(data,()=>console.log('insertManyPolls'));
-  res.send(JSON.stringify('complete'));
+  Promise.all(data).then((d)=>{
+    d=d.map(e=>e[0]);
+    Db.insertManyPolls(d);
+    res.send(JSON.stringify('complete'));
+  });
 });
 
 app.get('/logout', function(req,res) {
@@ -71,6 +73,16 @@ app.get('/logout', function(req,res) {
 });
 
 //post routes
+app.post('/m', function(req,res) { //'meta' route for things like tag clouds and UI component info
+  if (req.body.type==='tags') {
+    const numTags=req.body.numTags||10;
+    Db.aggregateTopNTags(numTags, function(data) {
+      res.send(JSON.stringify(data));
+    });
+  }
+  else { res.send(JSON.stringify({err:'something bad happened with the tag cloud generator'})); }
+});
+
 app.post('/d', function(req,res) {
   if (req.body.hName) {
     Db.loadPollByName(req.body.hName, function(data) { //make sure it exists in the database
@@ -155,18 +167,29 @@ app.post('/add', function(req,res) {
     choices.forEach(c=>voteObj[c]=0);
     let nameCtr=0;
     Db.loadPollsWithPrefix(potentialName,function(data, cb) {
+      let payload={tags:req.body.tags, colors:color, username:req.body.user, pollName:req.body.pollName, expiresOn:expiresOn, votes:voteObj, hName:potentialName};
       if (!data) {
-        Db.savePoll({colors:color, username:req.body.user, pollName:req.body.pollName, expiresOn:expiresOn, votes:voteObj, hName:potentialName},function(val){
+        Db.savePoll(payload,function(val){
           res.send(JSON.stringify(val.ops[0].hName));
         });
       }
       else {
         potentialName=`${potentialName}-${data.length}`;
-        Db.savePoll({colors:color, username:req.body.user, pollName:req.body.pollName, expiresOn:expiresOn, votes:voteObj, hName:potentialName},function(val){
+        Db.savePoll(Object.assign(payload,{hName:potentialName}),function(val){
           res.send(JSON.stringify(val.ops[0].hName));
         });
       }
     });
+  }
+});
+
+app.post('/t/:tag', function(req,res) {
+  const tag=req.params.tag;
+  if(tag!==null) {
+    Db.loadPollsWithTag(tag, function(d) {
+      if(d) { res.send(JSON.stringify(d)); }
+      else { res.send(JSON.stringify({err:'No polls exist with that tag.'})) }
+    })
   }
 });
 

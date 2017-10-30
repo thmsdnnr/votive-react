@@ -113,12 +113,28 @@ export default class PollPreview extends Component {
 
   handleColorPicker = (e) => {
     this.setState({[e.currentTarget.id]:e.currentTarget.value},()=>{
-      let customStops=[{color:this.state.lowStop, pos: 0},{color:this.state.highStop, pos: 1}];
+      let customStops=[{color:this.state.lowStop, pos: 0.5},{color:this.state.highStop, pos: 1}];
       this.setState({colorStops:customStops},()=>this.graphData(this.state.colorStops));
     });
   }
 
+  handleTags = (e) => {
+    const tags=e.currentTarget.value.split(',')
+    .map(e=>e.trim().replace(/#/,''))
+    .filter(e=>(e.length>0&&!e.match(/[^0-9a-zA-Z]/gi)));
+    this.setState({tags});
+  }
+
+  deDupe = (tags) => {
+    let res=[];
+    for (var i=0;i<tags.length;i++) {
+      if (tags.lastIndexOf(tags[i])===i) { res.push(tags[i]); }
+    }
+    return res;
+  }
+
   submitPreview = (e) => {
+    let tags=this.deDupe(this.state.tags).slice(0,6);
     fetch('/add', {
       method: 'POST',
       credentials: 'same-origin',
@@ -127,7 +143,8 @@ export default class PollPreview extends Component {
         colors:this.state.colorStops,
         ttv:this.props.location.state.ttv||null,
         pollName:this.state.pollData.pollName,
-        user:this.props.location.state.user
+        user:this.props.location.state.user,
+        tags:tags
       }),
       headers: {
         'Accept': 'application/json',
@@ -147,10 +164,22 @@ export default class PollPreview extends Component {
         <canvas className="chart mui-panel" id="graph"/>
         </div><br />
         <div id="previewButtonBox">
-          <button className='mui-btn mui-btn--raised mui-btn--primary' onClick={this.randColors}>random colors</button><br />
-          <input type="color" id="lowStop" onInput={this.handleColorPicker} />
-          <input type="color" id="highStop" onInput={this.handleColorPicker} />
+          <div id="previewCustomize">
+            <div id="previewCustomize">
+              <input type="color" id="lowStop" onInput={this.handleColorPicker} />
+              <input type="color" id="highStop" onInput={this.handleColorPicker} />
+              <button className='mui-btn mui-btn--raised mui-btn--primary' onClick={this.randColors}>random</button>
+            </div>
+          </div>
+        <div id="previewCustomize">
+          <div className="mui-textfield mui-textfield--float-label" id="txt">
+            <input type="text" name="tags" id="tags" autoFocus="true" required="false" onInput={this.handleTags} />
+            <label id="tagLabel">comma,separated,tags (max 6)</label>
+            </div>
+        </div>
+        <div id="previewCustomize">
           <button id="submitPreview" className='mui-btn mui-btn--raised mui-btn--primary' onClick={this.submitPreview}>All right, submit!</button>
+        </div>
         </div>
         </div>
       );

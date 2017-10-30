@@ -46,9 +46,23 @@ export default class RecentVotesWidget extends Component {
       let voteUser = p.username ? p.username : 'Anon ';
       //server gives us a Date.now() and we parse it here to get a ms since 1970 integer for the key
       switch(p.evtType) {
-        case 'newUser': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{p.username} joined us</div>); break;
-        case 'newPoll': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{p.username} created<br />—<Link to={'/p/'+p.hName}>{p.pollName}</Link></div>); break;
-        case 'newVote': return (<div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />{voteUser} voted for {p.vote}<br />—<Link to={'/p/'+p.hName}>{p.hName.replace(/-/g,' ')}</Link></div>); break;
+        case 'newUser': return (
+          <div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />
+          {p.username} joined us</div>);
+          break;
+        case 'newPoll': return (
+          <div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}><em>{tFmt(p.actionTime, 1)}</em><br />
+          {p.username} created<br />
+          —<Link to={'/p/'+p.hName}>{p.pollName}</Link><br />
+          {p.tags && p.tags.slice(0,3).map(e=>'#'+e+' ')}
+          </div>);
+          break;
+        case 'newVote': return (
+          <div id='toast' key={Date.parse(p.actionTime)} className={'event-'+idx}>
+          <em>{tFmt(p.actionTime, 1)}</em><br />
+          {voteUser} voted for {p.vote}<br />
+          —<Link to={'/p/'+p.hName}>{p.hName.replace(/-/g,' ')}</Link></div>);
+          break;
         default: return (<div id='toast'></div>);
       }
     });
