@@ -145,7 +145,7 @@ export default class DisplayPoll extends Component {
               scales: {
                 xAxes: [{
                   gridLines: { display: false },
-                  ticks: {display: 'ticksOn', stepSize: 1}
+                  ticks: { autoSkip: false }
                 }],
                 yAxes: [{
                   gridLines: { display: false },
@@ -219,7 +219,7 @@ export default class DisplayPoll extends Component {
           {display}
           {this.state.msg && <div id="warning">{this.state.msg}</div>}
           </div>
-          <div id="pollInfo"><div id="expiresOn">{expiryText}</div> {tags && <div id="pollTagBox">{tags.map(e=><div id="tag"><Link to={'/t/'+e}>#{e}</Link></div>)}</div>}</div>
+          <div id="pollInfo"><div id="expiresOn">{expiryText}</div> {tags && <div id="pollTagBox">{tags.map((e,idx)=><div id="tag" key={idx}><Link to={'/t/'+e} key={idx}>#{e}</Link></div>)}</div>}</div>
           </div>
         }
         {this.state.invalid && <div id="warning">{display}</div>}

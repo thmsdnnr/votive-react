@@ -62,8 +62,9 @@ app.get('/random', function(req,res) {
   }
   Promise.all(data).then((d)=>{
     d=d.map(e=>e[0]);
-    Db.insertManyPolls(d);
-    res.send(JSON.stringify('complete'));
+    Db.insertManyPolls(d,()=>{
+      res.end(JSON.stringify({msg:'complete'}));
+    });
   });
 });
 

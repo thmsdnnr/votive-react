@@ -97,31 +97,36 @@ const gS = [
 exports.randGrad = function() { return gS[Math.floor(Math.random()*(gS.length-1))]; }
 
 const randomTags=['cats','bats','wallabies','acroyoga','professional juggling','catherding','hiking','camping','tenting','programming',
-'worldsaving','dreaming','biking','running','climbing',"sticky","wordless","blackened",  "hand-held",  "uninspired",  "in-between",  "grammatical",  "protracted",  "ambivalent",  "aggravated",  "immersive",  "rubber",  "ambient",  "contaminated",  "exasperated",  "idealistic",  "long-held",  "laughable",  "versed",  "penned",  "disabling",  "hooded",  "fading",  "rubber",  "goalless",  "fearless",  "flexible",  "sometime",  "improbable",  "philosophical",  "adjustable",  "primal",  "permissible",  "human",  "healthier",  "left-footed",  "begotten",  "aggravated",  "paced",  "stately",  "ever-present",  "low-budget",  "uppity",  "mind-boggling",  "humid",  "premium",  "uninvited",  "injured",  "frugal",  "diagonal"
+'worldsaving','dreaming','biking','running','climbing',"sticky","wordless", "hand-held",  "uninspired",  "in-between",  "grammatical",  "protracted",  "ambivalent",  "aggravated",  "immersive",  "rubber",  "ambient",  "contaminated",  "exasperated",  "idealistic",  "long-held",  "laughable",  "versed",  "penned",  "disabling",  "hooded",  "fading",  "rubber",  "goalless",  "fearless",  "flexible",  "sometime",  "improbable",  "philosophical",  "adjustable",  "primal",  "permissible",  "human",  "healthier",  "left-footed",  "begotten",  "aggravated",  "paced",  "stately",  "ever-present",  "low-budget",  "uppity",  "mind-boggling",  "humid",  "premium",  "uninvited",  "injured",  "frugal",  "diagonal"
 ];
 
-const randomWord = () => randomTags[Math.floor(Math.random()*(randomTags.length-1))];
+const randomTag = () => randomTags[Math.floor(Math.random()*(randomTags.length-1))];
 const randomNoun = () => Nouns[Math.floor(Math.random()*(Nouns.length-1))];
-const randomTag = () => Adjectives[Math.floor(Math.random()*(100,150))];
+const randomAdjective = () => Adjectives[Math.floor(Math.random()*(10,450))];
 
 exports.randomPoll = function() {
     return new Promise(function(resolve,reject) {
       let pData=[];
       const randUser = String.fromCharCode(randNum(97,122));
-      const pollName = randomNoun()+" "+randomAdjective()+" "+randomNoun()//String.fromCharCode(randNum(97,122));
+      let hName = randomNoun()+"-"+randomAdjective()+"-"+randomNoun();
+      hName=hName.split("-").map(e=>{
+        e=e.split("");
+        e[0]=e[0].toUpperCase();
+        return e.join("");
+      }).join("-"); //TitleCase The Poll Name
+      let pollName = hName.replace(/-/g,' ');
       const numRandChoices = randNum(2,15);
       const randCreatedMoment = new Date(Date.now()-(1000*randNum(0,100000)));
       const randExpiry = Math.random()>=0.5 ? new Date(Date.now()+(1000*randNum(0,100000))) : null;
       let votes = {};
       let totalVotes=0;
       for (var i=0;i<numRandChoices;i++) {
-        const randC = pollName+String.fromCharCode(randNum(97,122));
-        votes[randC] = randNum(0,100); //0 to 100 votes
+        const randC = randomNoun();
+        votes[randC] = randNum(0,200);
         totalVotes+=votes[randC];
       }
       let accessCt = randNum(1,1000);
-      let hName=pollName+"-"+randUser+"-"+numRandChoices;
-      const tags=['randomlyGenerated'];
+      let tags=['randomlyGenerated'];
       tags.push(randomTag());
       tags.push(randomTag());
       tags.push(randomTag());
@@ -130,7 +135,7 @@ exports.randomPoll = function() {
       'username':randUser,
       'pollName':pollName,
       'expiresOn':randExpiry,
-      'colors':this.randGrad(),
+      'colors':gS[Math.floor(Math.random()*(gS.length-1))],
       'votes':votes,
       'totalVotes':totalVotes,
       'accessCt':accessCt,
@@ -138,7 +143,7 @@ exports.randomPoll = function() {
       'tags':tags
       });
     tags.map((tag,idx)=>{
-      db.collection("tags").insert({tag,pollName},()=>{if (idx===tags.length-1) {
+      db.collection("tags").insert({tag,hName},()=>{if (idx===tags.length-1) {
         resolve(pData);
       }});
     });
@@ -188,7 +193,7 @@ exports.savePoll = function(data,cb) {
     } else { cb(false); }
   });
   if (data.tags.length) {
-    data.tags.forEach((tag)=>{db.collection("tags").insert({tag:tag,pollName:data.pollName}); });
+    data.tags.forEach((tag)=>{db.collection("tags").insert({tag:tag,hName:data.hName}); });
   }
 }
 
@@ -200,6 +205,7 @@ exports.deletePoll = function(data,cb) {
 
 exports.deletePollByName = function(name,cb) {
   db.collection("polls").deleteOne({hName:name});
+  db.collection("tags").remove({hName:name});
   cb();
 }
 

@@ -22,8 +22,8 @@ export default class TagCloud extends Component {
 
   render() {
     let cloud;
-    if (this.state.tags) {
-      const tagArr=this.state.tags.slice(1).map(e=>[e._id, e.count]);
+    if (this.state&&this.state.tags&&this.state.tags.length) {
+      const tagArr=this.state.tags.map(e=>[e._id, e.count]);
       let max=tagArr[0][1];
       let min=tagArr[tagArr.length-1][1];
       const biggest=36;
